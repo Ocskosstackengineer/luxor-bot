@@ -2,11 +2,8 @@ name: luxor-bot
 
 on:
   schedule:
-    # UTC-ben; a bot budapesti idő szerint dönt (TZ lent). A sorsolás szombaton 18:30-19:30 körül van.
-    - cron: "12 7,8 * * 6"        # szombat reggel: tipp (9:12 körül télen és nyáron is)
-    - cron: "*/20 17-22 * * 6"    # szombat este 20 percenként: megjött-e az eredmény
-    - cron: "12 6-9 * * 0"        # vasárnap délelőtt óránként (12:00-ig): késve megjelenő eredmény
-    - cron: "42 6,18 * * *"       # naponta kétszer: Telegram-parancsok (a Telegram 24 óráig őrzi őket)
+    - cron: "50 7,8 * * 6"   # tartalék szombat reggel: 9:50 (tél) / 9:50–10:50 (nyár)
+    - cron: "12 9,10 * * 0"  # tartalék vasárnap délelőtt
   workflow_dispatch: {}
 
 permissions:
