@@ -20,9 +20,21 @@ A bot üzenetei, kommentjei, dokumentációja **magyarul**.
   `hyper` (hipergeometrikus várható érték/szórás), CLI + backtest.
 - `luxor_bot.py` – források, tipp, kiértékelés (találat, kép/keret/telitalálat húzásszáma),
   parancsok, ütemezés (`--once cron`). Token: `LUXOR_BOT_TOKEN` env/secret.
-- `.github/workflows/luxor.yml` – szombat reggel tipp, szombat este 20 percenként eredmény,
-  vasárnap délelőtt (12:00-ig) pótlás, naponta kétszer parancsok (a Telegram a ki nem olvasott
-  üzeneteket csak 24 óráig őrzi); utána állapot-commit. Kb. 38 futás/hét.
+- `.github/workflows/luxor.yml` – `workflow_dispatch` (ezt hívja a cron-job.org) + tartalék
+  `schedule`; futás után állapot-commit (mindig a friss `main`-ből).
+
+## Ütemezés
+- **Fő indító: cron-job.org**, a GitHub API-n (`POST .../actions/workflows/luxor.yml/dispatches`,
+  törzs `{"ref":"main"}`, fine-grained token, jogosultság: Actions: write). Időpontok budapesti
+  idő szerint: szombat **9:30** tipp (`tip_time: "09:30"`); szombat **19:00–23:40 20 percenként**
+  eredmény (a bot `result_time` 19:30-tól keres); vasárnap **8:00 és 10:00** pótlás; naponta
+  **13:00** parancsok (a Telegram a ki nem olvasott üzeneteket csak 24 óráig őrzi, ezért kell
+  minden nap legalább egy futás).
+- **Tartalék: a `luxor.yml` `schedule`-ja**, csak `50 7,8 * * 6` (szombat; télen 8:50/9:50,
+  nyáron 9:50/10:50) és `12 9,10 * * 0` (vasárnap; télen 10:12/11:12, nyáron 11:12/12:12) –
+  mindig a cron-job.org-os időpont UTÁN. Szombat esti tartalék nincs: a vasárnapi futás pótol.
+- Kb. 30 futás/hét (tartalékkal), ~125 Actions-perc/hó.
+- Kézi indítás: **Run workflow** (a „Re-run” a régi commitból indul, ne azt használd).
 
 ## Források (`source_url` lista)
 1. `cmsfiles/luxor.csv` – teljes történet számlálókkal, késve frissülhet.
