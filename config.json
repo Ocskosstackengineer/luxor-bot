@@ -1,0 +1,15 @@
+{
+  "telegram_token": "",
+  "chat_id": "6815378521",
+  "method": "kerules",
+  "draw_weekday": 5,
+  "tip_time": "09:00",
+  "result_time": "19:30",
+  "result_until": "12:00",
+  "source_url": [
+    "https://bet.szerencsejatek.hu/cmsfiles/luxor.csv",
+    "https://bet.szerencsejatek.hu/jatekok/luxor/sorsolasok"
+  ],
+  "data_file": "adat.csv",
+  "state_file": "bot_state.json"
+}
