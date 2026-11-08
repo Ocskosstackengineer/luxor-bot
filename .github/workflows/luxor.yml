@@ -25,6 +25,8 @@ jobs:
       LUXOR_BOT_TOKEN: ${{ secrets.LUXOR_BOT_TOKEN }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: main
 
       - uses: actions/setup-python@v6
         with:
@@ -44,5 +46,5 @@ jobs:
           for f in adat.csv bot_state.json; do if [ -f "$f" ]; then git add "$f"; fi; done
           if ! git diff --cached --quiet; then
             git commit -m "luxor: állapot $(date '+%Y-%m-%d %H:%M')"
-            git pull --rebase --quiet && git push --quiet
+            git pull --rebase -X theirs --quiet && git push --quiet
           fi
