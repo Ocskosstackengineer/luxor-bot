@@ -66,7 +66,17 @@
     68,
     71
    ],
-   "history_len": 1311
+   "history_len": 1311,
+   "draw_key": [
+    2026,
+    46
+   ],
+   "drawn": 43,
+   "hits": 11,
+   "control_hits": 13,
+   "kep_at": null,
+   "keret_at": null,
+   "tele_at": null
   }
  ],
  "update_offset": 138360615,
