@@ -35,7 +35,10 @@ except ImportError:
 
 import numpy as np
 
+import luxor_health as lh
 import luxor_predict as lp
+
+ALERTS = []  # futás közben gyűlő riasztások; a check_result / run_cron küldi ki
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 COLS = lp.COLS
@@ -168,24 +171,40 @@ def download(url):
             continue
 
 
-def fetch_remote(cfg):
-    """Az összes forrás húzásai (év, hét) szerint egyesítve; a számlálós (CSV) sor az erősebb."""
+def fetch_remote(cfg, st=None):
+    """Az összes forrás húzásai (év, hét) szerint egyesítve; a számlálós (CSV) sor az erősebb.
+    Ha st meg van adva, az egészségfigyelés is fut (riasztások az ALERTS-be)."""
     urls = cfg["source_url"]
     urls = [urls] if isinstance(urls, str) else [u for u in (urls or []) if u]
-    merged = {}
+    merged, by_url = {}, {}
     for url in urls:
         try:
             rows = parse_source(download(url))
         except Exception as e:
             log(f"forrás hiba ({url}): {e}")
+            if st is not None:
+                ALERTS.append(lh.note_source(st, url, False, error=e))
             continue
+        by_url[url] = rows
+        if st is not None:
+            ALERTS.append(lh.note_source(st, url, True, len(rows),
+                                         max((key(r) for r in rows), default=None)))
         for r in rows:
             old = merged.get(key(r))
             if old is None or (not any(old["counters"]) and any(r["counters"])):
                 merged[key(r)] = r
         log(f"forrás: {url} -> {len(rows)} húzás, legutóbbi: "
             f"{max((key(r) for r in rows), default='-')}")
+    if st is not None:
+        ALERTS.extend(lh.check_consistency(st, by_url))
     return [merged[k] for k in sorted(merged)]
+
+
+def flush_alerts(tg):
+    """Az összegyűlt (nem üres) riasztások elküldése, majd a lista ürítése."""
+    for msg in [m for m in ALERTS if m]:
+        tg.send(msg)
+    ALERTS.clear()
 
 
 # ---------------------------------------------------------------- állapot
@@ -376,7 +395,8 @@ def upgrade_counters(local, remote):
 
 def check_result(cfg, st, tg):
     local = read_history(cfg)
-    remote = fetch_remote(cfg)
+    remote = fetch_remote(cfg, st)
+    flush_alerts(tg)
     if upgrade_counters(local[-10:], remote):
         write_history(cfg, local)
         log("számlálók kiegészítve a CSV-ből")
@@ -496,9 +516,13 @@ def run_cron(cfg, tg, now=None):
         handle_updates(cfg, st, tg, timeout=0)
     except Exception as e:
         log(f"getUpdates hiba: {e}")
-    step(cfg, st, tg, now or dt.datetime.now())
-    if not os.path.exists(cfg["state_file"]):
-        save_state(cfg, st)
+    now = now or dt.datetime.now()
+    step(cfg, st, tg, now)
+    msg = lh.missing_result(st, open_tip(st), now, cfg.get("result_until", "12:00"))
+    if msg:
+        tg.send(msg)
+    flush_alerts(tg)
+    save_state(cfg, st)  # mindig: az egészségfigyelés számlálói is az állapotban vannak
 
 
 def run(cfg, tg):

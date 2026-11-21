@@ -22,6 +22,22 @@ A bot üzenetei, kommentjei, dokumentációja **magyarul**.
   parancsok, ütemezés (`--once cron`). Token: `LUXOR_BOT_TOKEN` env/secret.
 - `.github/workflows/luxor.yml` – `workflow_dispatch` (ezt hívja a cron-job.org) + tartalék
   `schedule`; futás után állapot-commit (mindig a friss `main`-ből).
+- `luxor_health.py` – egészségfigyelés (a Kenó-bot `keno_health.py` mintájára), lásd lent.
+- `tests/test_luxor.py` – beolvasás- és egészségfigyelés-tesztek:
+  `python -m unittest discover -s tests -v`. A `.github/workflows/tests.yml` minden push-nál
+  futtatja (az `adat.csv` / `bot_state.json`-only állapot-commitoknál nem).
+
+## Egészségfigyelés (`luxor_health.py`, állapot: `bot_state.json` → `"health"` kulcs)
+- **Forráshiba:** ha egy forrás 3× egymás után hibát ad vagy 0 húzást olvas ki belőle →
+  egyszeri riasztás; amikor újra működik → „helyreállt” üzenet. Csak eredménykeresésnél
+  számol (a `fetch_remote(cfg, st)` hívja; `st` nélkül – pl. kézi próbánál – nem fut).
+- **Két forrás eltérése** az utolsó 5 héten (azonos (év, hét), más számsor) → hetente egyszer
+  riasztás. A sorrendeltérést is jelzi, mert a kép/keret húzásszáma a húzási sorrendre épül.
+- **Hiányzó eredmény:** ha a sorsolás másnapján `result_until` (12:00) is elmúlt, és a tipp
+  még nyitott → egyszeri riasztás (a vasárnap 13:00-s parancsfutás küldi). Ezután a szombati
+  tipp előtti `check_result` még egyszer keres; ha akkor sincs, a tipp `skipped`.
+- A riasztások a modulszintű `ALERTS` listába gyűlnek, a `flush_alerts(tg)` küldi ki
+  (`check_result` és `run_cron` végén). A `run_cron` mindig menti az állapotot.
 
 ## Ütemezés
 - **Fő indító: cron-job.org**, a GitHub API-n (`POST .../actions/workflows/luxor.yml/dispatches`,
