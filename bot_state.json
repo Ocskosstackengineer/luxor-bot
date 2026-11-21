@@ -148,5 +148,10 @@
   }
  ],
  "update_offset": 138360615,
- "last_tip_day": "2026-11-21"
+ "last_tip_day": "2026-11-21",
+ "health": {
+  "sources": {},
+  "mismatch_alerted": [],
+  "missing_alerted": []
+ }
 }
