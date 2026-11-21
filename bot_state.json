@@ -144,13 +144,36 @@
     71,
     72
    ],
-   "history_len": 1312
+   "history_len": 1312,
+   "draw_key": [
+    2026,
+    47
+   ],
+   "drawn": 43,
+   "hits": 11,
+   "control_hits": 12,
+   "kep_at": null,
+   "keret_at": null,
+   "tele_at": null
   }
  ],
  "update_offset": 138360615,
  "last_tip_day": "2026-11-21",
  "health": {
-  "sources": {},
+  "sources": {
+   "https://bet.szerencsejatek.hu/cmsfiles/luxor.csv": {
+    "fail": 0,
+    "alerted": false,
+    "last_ok": "2026-11-21T19:40",
+    "latest": "(2026, 46)"
+   },
+   "https://bet.szerencsejatek.hu/jatekok/luxor/sorsolasok": {
+    "fail": 0,
+    "alerted": false,
+    "last_ok": "2026-11-21T19:40",
+    "latest": "(2026, 47)"
+   }
+  },
   "mismatch_alerted": [],
   "missing_alerted": []
  }
